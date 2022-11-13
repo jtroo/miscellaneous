@@ -13,25 +13,25 @@ fn main() {
     let mut green_road_distances = vec![];
 
     for event in svg::open(path, &mut content).unwrap() {
-        match event {
-            Event::Tag(_, _, attributes) => {
-                let Some(data) = attributes.get("d") else { continue };
-                let Some(style) = attributes.get("style") else { continue };
-                let data = Data::parse(data).unwrap();
-                if style.contains("stroke:#ff0000") { // red
-                    if red_reference_road_pixel_distance != 0.0 {
-                        panic!("multiple red lines");
-                    }
-                    red_reference_road_pixel_distance = data_pixel_distance(&data);
-                } else if style.contains("stroke:#0000ff") { // blue
-                    blue_road_distances.push(data_pixel_distance(&data));
-                } else if style.contains("stroke:#008000") { // green
-                    green_road_distances.push(data_pixel_distance(&data));
-                } else {
-                    panic!("unknown style: {style}");
+        if let Event::Tag(_, _, attributes) = event {
+            let Some(data) = attributes.get("d") else { continue };
+            let Some(style) = attributes.get("style") else { continue };
+            let data = Data::parse(data).unwrap();
+            if style.contains("stroke:#ff0000") {
+                // red
+                if red_reference_road_pixel_distance != 0.0 {
+                    panic!("multiple red lines");
                 }
+                red_reference_road_pixel_distance = data_pixel_distance(&data);
+            } else if style.contains("stroke:#0000ff") {
+                // blue
+                blue_road_distances.push(data_pixel_distance(&data));
+            } else if style.contains("stroke:#008000") {
+                // green
+                green_road_distances.push(data_pixel_distance(&data));
+            } else {
+                panic!("unknown style: {style}");
             }
-            _ => {}
         }
     }
     if red_reference_road_pixel_distance == 0.0 {
@@ -55,9 +55,10 @@ fn data_pixel_distance(d: &Data) -> f64 {
     };
     // expect pairs of coordinates
     assert!(params.len() % 2 == 0);
-    let points = params.chunks(2).map(|chunk| {
-        Point ( f64::from(chunk[0]),  f64::from(chunk[1]))
-    }).collect::<Vec<_>>();
+    let points = params
+        .chunks(2)
+        .map(|chunk| Point(f64::from(chunk[0]), f64::from(chunk[1])))
+        .collect::<Vec<_>>();
 
     match *pos {
         Position::Relative => points_pixel_distance_relative(&points),
@@ -66,7 +67,7 @@ fn data_pixel_distance(d: &Data) -> f64 {
 }
 
 #[derive(Debug, Copy, Clone, PartialEq)]
-struct Point (f64, f64);
+struct Point(f64, f64);
 
 fn points_pixel_distance_relative(points: &[Point]) -> f64 {
     // skip the first; it's the absolute start point:
@@ -75,7 +76,7 @@ fn points_pixel_distance_relative(points: &[Point]) -> f64 {
     let mut distance = 0.0;
     for point in points {
         let Point(x, y) = point;
-        distance += f64::sqrt(x*x + y*y);
+        distance += f64::sqrt(x * x + y * y);
     }
     distance
 }
@@ -87,7 +88,7 @@ fn points_pixel_distance_absolute(points: &[Point]) -> f64 {
     for point in points {
         let Point(x, y) = point;
         let Point(x_prev, y_prev) = prev_point;
-        distance += f64::sqrt((x_prev - x).powi(2) + (y_prev-y).powi(2));
+        distance += f64::sqrt((x_prev - x).powi(2) + (y_prev - y).powi(2));
         prev_point = point;
     }
     distance
