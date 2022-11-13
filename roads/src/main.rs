@@ -81,6 +81,13 @@ fn points_pixel_distance_relative(points: &[Point]) -> f64 {
     distance
 }
 
+#[test]
+fn test_distance_relative() {
+    assert_eq!(points_pixel_distance_relative(&[Point(100.0, 100.0), Point(1.0, 0.0)]), 1.0);
+    assert_eq!(points_pixel_distance_relative(&[Point(200.0, 200.0), Point(0.0, 2.0)]), 2.0);
+    assert_eq!(points_pixel_distance_relative(&[Point(300.0, 300.0), Point(3.0, 4.0)]), 5.0);
+}
+
 fn points_pixel_distance_absolute(points: &[Point]) -> f64 {
     let mut points = points.iter().copied();
     let mut distance = 0.0;
@@ -92,4 +99,11 @@ fn points_pixel_distance_absolute(points: &[Point]) -> f64 {
         prev_point = point;
     }
     distance
+}
+
+#[test]
+fn test_distance_absolute() {
+    assert_eq!(points_pixel_distance_absolute(&[Point(100.0, 100.0), Point(100.0, 101.0)]), 1.0);
+    assert_eq!(points_pixel_distance_absolute(&[Point(200.0, 200.0), Point(202.0, 200.0)]), 2.0);
+    assert_eq!(points_pixel_distance_absolute(&[Point(300.0, 300.0), Point(303.0, 304.0)]), 5.0);
 }
